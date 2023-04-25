@@ -44,7 +44,7 @@ struct max_annotator<int, N, TAnnot> {
     const int value;
     
     template <int M>
-    using min = min_annotator<int, M, TAnnot>;
+    using min = min_annotator<int, M, max_annotator<int, N, TAnnot>>;
 
     template <class... TArgs>
     max_annotator(TArgs... args) : value(std::forward<TArgs>(args)...) {
@@ -65,7 +65,7 @@ struct min_annotator<int, N, TAnnot> {
     const int value;
 
     template <int M>
-    using max = max_annotator<int, M, TAnnot>;
+    using max = max_annotator<int, M, min_annotator<int, N, TAnnot>>;
 
     template <class... TArgs>
     min_annotator(TArgs... args) : value(std::forward<TArgs>(args)...) {
@@ -89,8 +89,8 @@ struct max_annotator<std::string, N, TAnnot> {
     const std::string value;
     
     template <int M>
-    using min = min_annotator<std::string, M, TAnnot>;
-    using email = email_annotator<TAnnot>;
+    using min = min_annotator<std::string, M, max_annotator<std::string, N, TAnnot>>;
+    using email = email_annotator<max_annotator<std::string, N, TAnnot>>;
 
     template <class... TArgs>
     max_annotator(TArgs... args) : value(std::forward<TArgs>(args)...) {
@@ -111,8 +111,8 @@ struct min_annotator<std::string, N, TAnnot> {
     const std::string value;
 
     template <int M>
-    using max = max_annotator<std::string, M, TAnnot>;
-    using email = email_annotator<TAnnot>;
+    using max = max_annotator<std::string, M, min_annotator<std::string, N, TAnnot>>;
+    using email = email_annotator<min_annotator<std::string, N, TAnnot>>;
 
     template <class... TArgs>
     min_annotator(TArgs... args) : value(std::forward<TArgs>(args)...) {
@@ -133,9 +133,9 @@ struct email_annotator {
     const std::string value;
 
     template <int M>
-    using max = max_annotator<std::string, M, TAnnot>;
-    template <int N>
-    using min = min_annotator<std::string, N>;
+    using max = max_annotator<std::string, M, email_annotator<TAnnot>>;
+    template <int M>
+    using min = min_annotator<std::string, M, email_annotator<TAnnot>>;
 
     template <class... TArgs>
     email_annotator(TArgs... args) : value(std::forward<TArgs>(args)...) {
