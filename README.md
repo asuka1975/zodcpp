@@ -8,7 +8,7 @@ using int0to64 = zod<int>::min<0>::max<64>;
 int main() {
     int0to64 v1 = 10;
     int0to64 v2 = 70; // 64を超えるので実行時エラー
-    int0to64 v3 = -10; // 0を下回るので実行時エラーのはずだけど、なぜか普通に実行できる
+    int0to64 v3 = -10; // 0を下回るので実行時エラー
 
     std::cout << v1.value << std::endl;
     std::cout << v2.value << std::endl;
