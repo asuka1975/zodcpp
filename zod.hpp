@@ -72,8 +72,8 @@ struct min_annotator<int, N, TAnnot> {
         max_annotator<int, N, TAnnot>::annotate(value);
     }
 
-    static void annotate(const std::string& value) {
-        if(value.length() < N) {
+    static void annotate(const int& value) {
+        if(value < N) {
             throw 0;
         }
         TAnnot::annotate(value);
