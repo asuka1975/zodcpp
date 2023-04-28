@@ -12,9 +12,9 @@ struct empty_annotator {
     using this_t = empty_annotator<T>;
 
     template <class... TArgs>
-    empty_annotator(TArgs... args) : value(std::forward<TArgs>(args)...) {}
+    constexpr empty_annotator(TArgs... args) : value(std::forward<TArgs>(args)...) {}
 
-    static void annotate(const T& value) {}
+    constexpr static void annotate(const T& value) {}
 };
 
 template <class T, int N, class TAnnot=empty_annotator<T>>
@@ -49,11 +49,11 @@ struct max_annotator<int, N, TAnnot> {
     using min = min_annotator<int, M, this_t>;
 
     template <class... TArgs>
-    max_annotator(TArgs... args) : value(std::forward<TArgs>(args)...) {
+    constexpr max_annotator(TArgs... args) : value(std::forward<TArgs>(args)...) {
         max_annotator<int, N, TAnnot>::annotate(value);
     }
 
-    static void annotate(const int& value) {
+    constexpr static void annotate(const int& value) {
         if(value > N) {
             throw 0;
         }
@@ -71,11 +71,11 @@ struct min_annotator<int, N, TAnnot> {
     using max = max_annotator<int, M, this_t>;
 
     template <class... TArgs>
-    min_annotator(TArgs... args) : value(std::forward<TArgs>(args)...) {
+    constexpr min_annotator(TArgs... args) : value(std::forward<TArgs>(args)...) {
         max_annotator<int, N, TAnnot>::annotate(value);
     }
 
-    static void annotate(const int& value) {
+    constexpr static void annotate(const int& value) {
         if(value < N) {
             throw 0;
         }
@@ -97,11 +97,11 @@ struct max_annotator<std::string, N, TAnnot> {
     using email = email_annotator<this_t>;
 
     template <class... TArgs>
-    max_annotator(TArgs... args) : value(std::forward<TArgs>(args)...) {
+    constexpr max_annotator(TArgs... args) : value(std::forward<TArgs>(args)...) {
         max_annotator<std::string, N, TAnnot>::annotate(value);
     }
 
-    static void annotate(const std::string& value) {
+    constexpr static void annotate(const std::string& value) {
         if(value.length() > N) {
             throw 0;
         }
@@ -120,11 +120,11 @@ struct min_annotator<std::string, N, TAnnot> {
     using email = email_annotator<this_t>;
 
     template <class... TArgs>
-    min_annotator(TArgs... args) : value(std::forward<TArgs>(args)...) {
+    constexpr min_annotator(TArgs... args) : value(std::forward<TArgs>(args)...) {
         max_annotator<std::string, N, TAnnot>::annotate(value);
     }
 
-    static void annotate(const std::string& value) {
+    constexpr static void annotate(const std::string& value) {
         if(value.length() < N) {
             throw 0;
         }
@@ -144,7 +144,7 @@ struct email_annotator {
     using min = min_annotator<std::string, M, this_t>;
 
     template <class... TArgs>
-    email_annotator(TArgs... args) : value(std::forward<TArgs>(args)...) {
+    constexpr email_annotator(TArgs... args) : value(std::forward<TArgs>(args)...) {
         email_annotator<>::annotate(value);
     }
 
@@ -175,7 +175,7 @@ struct zod<int> {
     using min = min_annotator<int, N>;
 
     template <class... TArgs>
-    zod(TArgs... args) : value(std::forward<TArgs>(args)...) {}
+    constexpr zod(TArgs... args) : value(std::forward<TArgs>(args)...) {}
 };
 
 template <> 
@@ -190,7 +190,7 @@ struct zod<std::string> {
     using email = email_annotator<>;
 
     template <class... TArgs>
-    zod(TArgs... args) : value(std::forward<TArgs>(args)...) {}
+    constexpr zod(TArgs... args) : value(std::forward<TArgs>(args)...) {}
 };
 
 #endif
