@@ -1,6 +1,7 @@
 #ifndef ZOD_HPP
 #define ZOD_HPP
 
+#include <algorithm>
 #include <regex>
 #include <string>
 #include <utility>
@@ -15,6 +16,19 @@ struct empty_validator {
     constexpr empty_validator(TArgs... args) : value(std::forward<TArgs>(args)...) {}
 
     constexpr static void validate(const T& value) {}
+};
+
+template <std::size_t N>
+struct r {
+    char value[N];
+
+    constexpr r(const char (&v)[N]) {
+        std::copy_n(v, N, value);
+    }
+
+    std::regex regex() const {
+        return std::regex { value };
+    }
 };
 
 template <class T, int N, class TValid=empty_validator<T>>
@@ -50,7 +64,7 @@ struct max_validator<int, N, TValid> {
 
     template <class... TArgs>
     constexpr max_validator(TArgs... args) : value(std::forward<TArgs>(args)...) {
-        max_validator<int, N, TValid>::validate(value);
+        validate(value);
     }
 
     constexpr static void validate(const int& value) {
@@ -72,7 +86,7 @@ struct min_validator<int, N, TValid> {
 
     template <class... TArgs>
     constexpr min_validator(TArgs... args) : value(std::forward<TArgs>(args)...) {
-        max_validator<int, N, TValid>::validate(value);
+        validate(value);
     }
 
     constexpr static void validate(const int& value) {
@@ -101,7 +115,7 @@ struct max_validator<std::string, N, TValid> {
 
     template <class... TArgs>
     constexpr max_validator(TArgs... args) : value(std::forward<TArgs>(args)...) {
-        max_validator<std::string, N, TValid>::validate(value);
+        validate(value);
     }
 
     constexpr static void validate(const std::string& value) {
@@ -124,7 +138,7 @@ struct min_validator<std::string, N, TValid> {
 
     template <class... TArgs>
     constexpr min_validator(TArgs... args) : value(std::forward<TArgs>(args)...) {
-        max_validator<std::string, N, TValid>::validate(value);
+        validate(value);
     }
 
     constexpr static void validate(const std::string& value) {
@@ -148,7 +162,7 @@ struct email_validator {
 
     template <class... TArgs>
     constexpr email_validator(TArgs... args) : value(std::forward<TArgs>(args)...) {
-        email_validator<>::validate(value);
+        validate(value);
     }
 
     static void validate(const std::string& value) {
@@ -165,7 +179,7 @@ struct email_validator {
 template <class TValid=empty_validator<std::string>>
 struct url_validator {
     using type = std::string;
-    using this_t = email_validator<TValid>;
+    using this_t = url_validator<TValid>;
     const std::string value;
 
     template <int M>
@@ -175,13 +189,38 @@ struct url_validator {
 
     template <class... TArgs>
     constexpr url_validator(TArgs... args) : value(std::forward<TArgs>(args)...) {
-        url_validator<>::validate(value);
+        validate(value);
     }
 
     static void validate(const std::string& value) {
         static std::regex re(R"*(\w+://[\w!?/+\-_~;.,*&@#$%()'[\]]+)*");
         std::smatch m;
         if(!std::regex_match(value, m, re)) {
+            throw 0;
+        }
+        TValid::validate(value);
+    }
+};
+
+template <r R, class TValid=empty_validator<std::string>>
+struct regex_validator {
+    using type = std::string;
+    using this_t = regex_validator<R, TValid>;
+    const std::string value;
+
+    template <int M>
+    using max = max_validator<std::string, M, this_t>;
+    template <int M>
+    using min = min_validator<std::string, M, this_t>;
+
+    template <class... TArgs>
+    constexpr regex_validator(TArgs... args) : value(std::forward<TArgs>(args)...) {
+        validate(value);
+    }
+
+    static void validate(const std::string& value) {
+        std::smatch m;
+        if(!std::regex_match(value, m, R.regex())) {
             throw 0;
         }
         TValid::validate(value);
@@ -218,9 +257,12 @@ struct zod<std::string> {
     using min = min_validator<std::string, N>;
     using email = email_validator<>;
     using url = url_validator<>;
+    template <r R>
+    using regex = regex_validator<R>;
 
     template <class... TArgs>
     constexpr zod(TArgs... args) : value(std::forward<TArgs>(args)...) {}
 };
+
 
 #endif
