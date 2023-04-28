@@ -86,6 +86,9 @@ struct min_annotator<int, N, TAnnot> {
 template <class TAnnot>
 struct email_annotator;
 
+template <class TAnnot>
+struct url_annotator;
+
 template <int N, class TAnnot>
 struct max_annotator<std::string, N, TAnnot> {
     using type = std::string;
@@ -159,6 +162,32 @@ struct email_annotator {
 
 };
 
+template <class TAnnot=empty_annotator<std::string>>
+struct url_annotator {
+    using type = std::string;
+    using this_t = email_annotator<TAnnot>;
+    const std::string value;
+
+    template <int M>
+    using max = max_annotator<std::string, M, this_t>;
+    template <int M>
+    using min = min_annotator<std::string, M, this_t>;
+
+    template <class... TArgs>
+    constexpr url_annotator(TArgs... args) : value(std::forward<TArgs>(args)...) {
+        url_annotator<>::annotate(value);
+    }
+
+    static void annotate(const std::string& value) {
+        static std::regex re(R"*(\w+://[\w!?/+\-_~;.,*&@#$%()'[\]]+)*");
+        std::smatch m;
+        if(!std::regex_match(value, m, re)) {
+            throw 0;
+        }
+        TAnnot::annotate(value);
+    }
+};
+
 template <class T> 
 struct zod {
 
@@ -188,6 +217,7 @@ struct zod<std::string> {
     template <int N>
     using min = min_annotator<std::string, N>;
     using email = email_annotator<>;
+    using url = url_annotator<>;
 
     template <class... TArgs>
     constexpr zod(TArgs... args) : value(std::forward<TArgs>(args)...) {}
